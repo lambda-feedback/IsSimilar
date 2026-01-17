@@ -244,5 +244,65 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(response.get("is_correct"), False)
         self.assertEqual("Please enter a number." in response.get("feedback"), True)
 
+    def test_atol_is_parseable_string(self):
+        body = {
+            "response": 2,
+            "answer": 2.1,
+            "params": {
+                "atol": "0.2"
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_atol_is_not_parseable_string(self):
+        body = {
+            "response": 2,
+            "answer": 2.1,
+            "params": {
+                "atol": "nonsense"
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
+    def test_rtol_is_parseable_string(self):
+        body = {
+            "response": 2,
+            "answer": 2.1,
+            "params": {
+                "rtol": "0.1"
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_rtol_is_not_parseable_string(self):
+        body = {
+            "response": 2,
+            "answer": 2.1,
+            "params": {
+                "rtol": "nonsense"
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
 if __name__ == "__main__":
     unittest.main()

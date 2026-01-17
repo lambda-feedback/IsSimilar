@@ -24,6 +24,18 @@ def evaluation_function(response, answer, params) -> dict:
     rtol = params.get("rtol", 0)
     atol = params.get("atol", 0)
 
+    if isinstance(rtol, str):
+        try:
+            rtol = float(rtol)
+        except Exception as e:
+            raise Exception("Relative tolerance must be given as a number.") from e
+
+    if isinstance(atol, str):
+        try:
+            atol = float(atol)
+        except Exception as e:
+            raise Exception("Absolute tolerance must be given as a number.") from e
+
     is_correct = None
     real_diff = None
 
