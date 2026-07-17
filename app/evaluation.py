@@ -7,6 +7,16 @@ def _round_to_sig_figs(value, sig_figs):
     return float(f"{value:.{sig_figs}g}")
 
 
+def _sig_figs_match(response, answer, sig_figs):
+    rounded_answer = _round_to_sig_figs(answer, sig_figs)
+    rounded_response = _round_to_sig_figs(response, sig_figs)
+    return abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
+
+
+def _tolerance_allowed_diff(answer, relative_tolerance, absolute_tolerance):
+    return absolute_tolerance + relative_tolerance * abs(answer) + spacing(answer)
+
+
 def evaluation_function(response, answer, params) -> dict:
     """
     Function used to grade a student response.
@@ -49,11 +59,9 @@ def evaluation_function(response, answer, params) -> dict:
     if not (isinstance(answer, int) or isinstance(answer, float)):
         raise Exception("Answer must be a number.")
 
-    if sig_figs is None:
-        allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
-        allowed_diff += spacing(answer)
-    else:
-        allowed_diff = None
+    allowed_diff = None if sig_figs is not None else _tolerance_allowed_diff(
+        answer, relative_tolerance, absolute_tolerance
+    )
 
     if not (isinstance(response, int) or isinstance(response, float)):
         return {
@@ -64,18 +72,13 @@ def evaluation_function(response, answer, params) -> dict:
         }
 
     real_diff = abs(response - answer)
-
-    if sig_figs is None:
-        is_correct = bool(real_diff <= allowed_diff)
+    if sig_figs is not None:
+        is_correct = _sig_figs_match(response, answer, sig_figs)
     else:
-        rounded_answer = _round_to_sig_figs(answer, sig_figs)
-        rounded_response = _round_to_sig_figs(response, sig_figs)
-        is_correct = bool(
-            abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
-        )
+        is_correct = real_diff <= allowed_diff
 
     return {
-        "is_correct": is_correct,
+        "is_correct": bool(is_correct),
         "real_diff": real_diff,
         "allowed_diff": allowed_diff,
         "feedback": "",
