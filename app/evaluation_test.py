@@ -244,5 +244,35 @@ class TestEvaluationFunction(unittest.TestCase):
         self.assertEqual(response.get("is_correct"), False)
         self.assertEqual("Please enter a number." in response.get("feedback"), True)
 
+    def test_full_param_correct(self):
+        body = {
+            "response": 1e6,
+            "answer": 1e7,
+            "params": {
+                "relative_tolerance": 1e-1,
+                "absolute_tolerance": 8.2e6
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_full_param_incorrect(self):
+        body = {
+            "response": 1e6,
+            "answer": 2e7,
+            "params": {
+                "relative_tolerance": 1e-1,
+                "absolute_tolerance": 8.2e6
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+
 if __name__ == "__main__":
     unittest.main()
