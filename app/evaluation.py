@@ -21,31 +21,30 @@ def evaluation_function(response, answer, params) -> dict:
     to output the grading response.
     """
 
-    rtol = params.get("rtol", 0)
-    atol = params.get("atol", 0)
-
-    is_correct = None
-    real_diff = None
+    relative_tolerance = params.get("relative_tolerance", params.get("rtol", 0))
+    absolute_tolerance = params.get("absolute_tolerance", params.get("atol", 0))
 
     if not (isinstance(answer, int) or isinstance(answer, float)):
         raise Exception("Answer must be a number.")
 
-    real_diff = None
-    allowed_diff = atol + rtol * abs(answer)
+    allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
     allowed_diff += spacing(answer)
-    is_correct = False
-    feedback = ""
+
     if not (isinstance(response, int) or isinstance(response, float)):
-        feedback = "Please enter a number."
-    else:
-        real_diff = abs(response - answer)
-        allowed_diff = atol + rtol * abs(answer)
-        allowed_diff += spacing(answer)
-        is_correct = bool(real_diff <= allowed_diff)
+        return {
+            "is_correct": False,
+            "real_diff": None,
+            "allowed_diff": allowed_diff,
+            "feedback": "Please enter a number.",
+        }
+
+
+    real_diff = abs(response - answer)
+    is_correct = bool(real_diff <= allowed_diff)
 
     return {
         "is_correct": is_correct,
         "real_diff": real_diff,
         "allowed_diff": allowed_diff,
-        "feedback": feedback,
+        "feedback": "",
     }
