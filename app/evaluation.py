@@ -40,8 +40,6 @@ def evaluation_function(response, answer, params) -> dict:
 
 
     real_diff = abs(response - answer)
-    allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
-    allowed_diff += spacing(answer)
     is_correct = bool(real_diff <= allowed_diff)
 
     return {
