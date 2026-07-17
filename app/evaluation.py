@@ -1,52 +1,45 @@
 from numpy import spacing
 
 
+def _is_number(value):
+    return isinstance(value, int) or isinstance(value, float)
+
+
 def _round_to_sig_figs(value, sig_figs):
     if value == 0:
         return 0.0
     return float(f"{value:.{sig_figs}g}")
 
 
+def _result(is_correct, real_diff, allowed_diff, feedback=""):
+    return {
+        "is_correct": bool(is_correct),
+        "real_diff": real_diff,
+        "allowed_diff": allowed_diff,
+        "feedback": feedback,
+    }
+
+
 def _evaluate_sig_figs(response, answer, sig_figs):
-    if not (isinstance(response, int) or isinstance(response, float)):
-        return {
-            "is_correct": False,
-            "real_diff": None,
-            "allowed_diff": None,
-            "feedback": "Please enter a number.",
-        }
+    if not _is_number(response):
+        return _result(False, None, None, "Please enter a number.")
 
     rounded_answer = _round_to_sig_figs(answer, sig_figs)
     rounded_response = _round_to_sig_figs(response, sig_figs)
     is_correct = abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
 
-    return {
-        "is_correct": bool(is_correct),
-        "real_diff": abs(response - answer),
-        "allowed_diff": None,
-        "feedback": "",
-    }
+    return _result(is_correct, abs(response - answer), None)
 
 
 def _evaluate_tolerance(response, answer, relative_tolerance, absolute_tolerance):
     allowed_diff = absolute_tolerance + relative_tolerance * abs(answer) + spacing(answer)
 
-    if not (isinstance(response, int) or isinstance(response, float)):
-        return {
-            "is_correct": False,
-            "real_diff": None,
-            "allowed_diff": allowed_diff,
-            "feedback": "Please enter a number.",
-        }
+    if not _is_number(response):
+        return _result(False, None, allowed_diff, "Please enter a number.")
 
     real_diff = abs(response - answer)
 
-    return {
-        "is_correct": bool(real_diff <= allowed_diff),
-        "real_diff": real_diff,
-        "allowed_diff": allowed_diff,
-        "feedback": "",
-    }
+    return _result(real_diff <= allowed_diff, real_diff, allowed_diff)
 
 
 def evaluation_function(response, answer, params) -> dict:
@@ -88,7 +81,7 @@ def evaluation_function(response, answer, params) -> dict:
     if sig_figs is not None and (not isinstance(sig_figs, int) or sig_figs < 1):
         raise Exception("significant_figures must be a positive integer.")
 
-    if not (isinstance(answer, int) or isinstance(answer, float)):
+    if not _is_number(answer):
         raise Exception("Answer must be a number.")
 
     if sig_figs is not None:
