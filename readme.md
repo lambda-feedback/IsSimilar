@@ -1,6 +1,6 @@
 # IsSimilar
 
-This function checks whether a student's numeric response is within an acceptable tolerance of the correct answer, using absolute (`atol`) and relative (`rtol`) tolerance parameters. The comparison follows the formula: `|response - answer| ≤ atol + rtol × |answer|`. By default both tolerances are 0, requiring an exact match (within floating-point precision).
+This function checks whether a student's numeric response is within an acceptable tolerance of the correct answer, using absolute (`absolute_tolerance`) and relative (`relative_tolerance`) tolerance parameters. The comparison follows the formula: `|response - answer| ≤ absolute_tolerance + relative_tolerance × |answer|`. By default both tolerances are 0, requiring an exact match (within floating-point precision).
 
 For more information, look at the docs in `app/docs/`.
 
