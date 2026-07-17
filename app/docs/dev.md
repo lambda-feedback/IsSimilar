@@ -8,6 +8,14 @@ Valid params include `atol` and `rtol`, which can be used in combination, or alo
 is_correct = abs(res - ans) <= (atol + rtol*abs(ans))
 ```
 
+Alternatively, `sig_figs` (or `significant_figures`) can be supplied to round both `res` and `ans` to N significant figures and require them to be equal:
+
+```python
+is_correct = round_to_sig_figs(res, sig_figs) == round_to_sig_figs(ans, sig_figs)
+```
+
+`sig_figs` cannot be combined with `atol`/`rtol` — supplying both raises an exception.
+
 ## Inputs
 
 ```json
@@ -16,7 +24,8 @@ is_correct = abs(res - ans) <= (atol + rtol*abs(ans))
   "answer": "<number>",
   "params": {
     "atol": "<number>",
-    "rtol": "<number>"
+    "rtol": "<number>",
+    "sig_figs": "<int>"
   }
 }
 ```
@@ -28,6 +37,10 @@ Absolute tolerance parameter
 ### `rtol`
 
 Relative tolerance parameter
+
+### `sig_figs`
+
+Significant-figures parameter. Mutually exclusive with `atol`/`rtol`.
 
 ## Outputs
 ```json

@@ -1,5 +1,12 @@
 from numpy import spacing
 
+
+def _round_to_sig_figs(value, sig_figs):
+    if value == 0:
+        return 0.0
+    return float(f"{value:.{sig_figs}g}")
+
+
 def evaluation_function(response, answer, params) -> dict:
     """
     Function used to grade a student response.
@@ -21,14 +28,32 @@ def evaluation_function(response, answer, params) -> dict:
     to output the grading response.
     """
 
+    sig_figs = params.get("significant_figures", params.get("sig_figs"))
     relative_tolerance = params.get("relative_tolerance", params.get("rtol", 0))
     absolute_tolerance = params.get("absolute_tolerance", params.get("atol", 0))
+
+    uses_tolerance = any(
+        key in params
+        for key in ("relative_tolerance", "rtol", "absolute_tolerance", "atol")
+    )
+
+    if sig_figs is not None and uses_tolerance:
+        raise Exception(
+            "significant_figures/sig_figs cannot be used together with "
+            "relative_tolerance/rtol or absolute_tolerance/atol."
+        )
+
+    if sig_figs is not None and (not isinstance(sig_figs, int) or sig_figs < 1):
+        raise Exception("significant_figures must be a positive integer.")
 
     if not (isinstance(answer, int) or isinstance(answer, float)):
         raise Exception("Answer must be a number.")
 
-    allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
-    allowed_diff += spacing(answer)
+    if sig_figs is None:
+        allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
+        allowed_diff += spacing(answer)
+    else:
+        allowed_diff = None
 
     if not (isinstance(response, int) or isinstance(response, float)):
         return {
@@ -38,11 +63,16 @@ def evaluation_function(response, answer, params) -> dict:
             "feedback": "Please enter a number.",
         }
 
-
     real_diff = abs(response - answer)
-    allowed_diff = absolute_tolerance + relative_tolerance * abs(answer)
-    allowed_diff += spacing(answer)
-    is_correct = bool(real_diff <= allowed_diff)
+
+    if sig_figs is None:
+        is_correct = bool(real_diff <= allowed_diff)
+    else:
+        rounded_answer = _round_to_sig_figs(answer, sig_figs)
+        rounded_response = _round_to_sig_figs(response, sig_figs)
+        is_correct = bool(
+            abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
+        )
 
     return {
         "is_correct": is_correct,

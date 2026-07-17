@@ -274,5 +274,177 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), False)
 
+    def test_sig_figs_correct(self):
+        body = {
+            "response": 3.14159,
+            "answer": 3.14,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_incorrect(self):
+        body = {
+            "response": 3.15,
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+
+    def test_sig_figs_negative_numbers(self):
+        body = {
+            "response": -3.14159,
+            "answer": -3.14,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_zero_answer(self):
+        body = {
+            "response": 0,
+            "answer": 0,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_invalid_value(self):
+        body = {
+            "response": 3.14,
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 0
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
+    def test_sig_figs_invalid_type(self):
+        body = {
+            "response": 3.14,
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3.5
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
+    def test_sig_figs_and_tolerance_mutually_exclusive(self):
+        body = {
+            "response": 3.14,
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3,
+                "atol": 0.1
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
+    def test_sig_figs_and_tolerance_mutually_exclusive_long_names(self):
+        body = {
+            "response": 3.14,
+            "answer": 3.14159,
+            "params": {
+                "significant_figures": 3,
+                "relative_tolerance": 0.1
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
+    def test_sig_figs_synonym_key(self):
+        body = {
+            "response": 3.14159,
+            "answer": 3.14,
+            "params": {
+                "significant_figures": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_non_numeric_response(self):
+        body = {
+            "response": "two",
+            "answer": 3.14,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual("Please enter a number." in response.get("feedback"), True)
+
+    def test_sig_figs_non_numeric_answer(self):
+        body = {
+            "response": 3.14,
+            "answer": "pi",
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        self.assertRaises(
+            Exception,
+            evaluation_function,
+            body["response"],
+            body["answer"],
+            body["params"],
+        )
+
 if __name__ == "__main__":
     unittest.main()
