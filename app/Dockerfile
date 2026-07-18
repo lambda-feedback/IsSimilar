@@ -2,6 +2,9 @@
 # FROM base-eval-tmp
 FROM ghcr.io/lambda-feedback/baseevalutionfunctionlayer:main-3.12
 
+RUN dnf install -y git findutils && dnf clean all
+
+
 WORKDIR /app
 
 # Copy and install any packages/modules needed for your evaluation script.
