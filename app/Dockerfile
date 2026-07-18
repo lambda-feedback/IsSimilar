@@ -24,4 +24,4 @@ RUN chmod 644 $(find . -type f)
 RUN chmod 755 $(find . -type d)
 
 # The entrypoint for AWS is to invoke the handler function within the app package
-CMD [ "/app/app.handler" ]
+CMD [ "app.handler" ]
