@@ -7,6 +7,8 @@ RUN dnf install -y git findutils && dnf clean all
 
 WORKDIR /app
 
+ENV PYTHONPATH=/app
+
 # Copy and install any packages/modules needed for your evaluation script.
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
