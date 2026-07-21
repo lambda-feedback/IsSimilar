@@ -2,10 +2,10 @@
 
 This simple evaluation function checks if the supplied response is within a tolerance range defined in `params`. Works exactly like the [numpy.isclose](https://numpy.org/doc/stable/reference/generated/numpy.isclose.html#numpy.isclose) function.
 
-Valid params include `atol` and `rtol`, which can be used in combination, or alone. As the comparison made is the following:
+Valid params include `absolute_tolerance` and `relative_tolerance`, which can be used in combination, or alone. As the comparison made is the following:
 
 ```python
-is_correct = abs(res - ans) <= (atol + rtol*abs(ans))
+is_correct = abs(res - ans) <= (absolute_tolerance + relative_tolerance*abs(ans))
 ```
 
 Alternatively, `sig_figs` (or `significant_figures`) can be supplied to require both a numeric match and a precision match to N significant figures:
@@ -28,18 +28,18 @@ In `sig_figs` mode, `response` must be a **string** (e.g. `"92.00"`), not a pre-
   "response": "<number | string, use string for sig_figs mode>",
   "answer": "<number>",
   "params": {
-    "atol": "<number>",
-    "rtol": "<number>",
+    "absolute_tolerance": "<number>",
+    "relative_tolerance": "<number>",
     "sig_figs": "<int>"
   }
 }
 ```
 
-### `atol`
+### `absolute_tolerance`
 
 Absolute tolerance parameter
 
-### `rtol`
+### `relative_tolerance`
 
 Relative tolerance parameter
 
@@ -52,7 +52,7 @@ Significant-figures parameter. Mutually exclusive with `atol`/`rtol`.
 {
   "is_correct": "<bool>",
   "real_diff": "<number>",
-  "allowed_diff": "<number>",
+  "allowed_diff": "<number>"
 }
 ```
 
@@ -60,7 +60,7 @@ Significant-figures parameter. Mutually exclusive with `atol`/`rtol`.
 Real difference between the given answer and response
 
 ### `allowed_diff`
-Allowed difference between answer and response, calculated using the supplied `atol` and `rtol` parameters
+Allowed difference between answer and response, calculated using the supplied `absolute_tolerance` and `relative_tolerance` parameters
 
 
 ## Examples
