@@ -11,6 +11,40 @@ def _round_to_sig_figs(value, sig_figs):
     return float(f"{value:.{sig_figs}g}")
 
 
+def _split_numeric_string(value):
+    if not isinstance(value, str):
+        return None
+    stripped = value.strip()
+    body = stripped[1:] if stripped[:1] in ("+", "-") else stripped
+
+    mantissa, sep, exponent = body.partition("e") if "e" in body else body.partition("E")
+    if sep and not exponent.lstrip("+-").isdigit():
+        return None
+
+    has_decimal = "." in mantissa
+    int_part, _, frac_part = mantissa.partition(".")
+    if not (int_part.isdigit() or frac_part.isdigit()):
+        return None
+    if int_part and not int_part.isdigit():
+        return None
+    if frac_part and not frac_part.isdigit():
+        return None
+
+    return int_part, frac_part, has_decimal
+
+
+def _count_sig_figs(int_part, frac_part, has_decimal):
+    digits = int_part + frac_part
+    first_nonzero = next((i for i, d in enumerate(digits) if d != "0"), None)
+    if first_nonzero is None:
+        return 1
+
+    trimmed = digits[first_nonzero:]
+    if has_decimal:
+        return len(trimmed)
+    return len(trimmed.rstrip("0")) or 1
+
+
 def _result(is_correct, real_diff, allowed_diff, feedback=""):
     return {
         "is_correct": bool(is_correct),
@@ -21,14 +55,23 @@ def _result(is_correct, real_diff, allowed_diff, feedback=""):
 
 
 def _evaluate_sig_figs(response, answer, sig_figs):
-    if not _is_number(response):
+    parts = _split_numeric_string(response)
+    if parts is None:
         return _result(False, None, None, "Please enter a number.")
 
+    response_value = float(response)
     rounded_answer = _round_to_sig_figs(answer, sig_figs)
-    rounded_response = _round_to_sig_figs(response, sig_figs)
-    is_correct = abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
+    rounded_response = _round_to_sig_figs(response_value, sig_figs)
+    numeric_correct = abs(rounded_response - rounded_answer) <= spacing(abs(rounded_answer))
 
-    return _result(is_correct, abs(response - answer), None)
+    precision_correct = response_value == 0 or _count_sig_figs(*parts) == sig_figs
+    is_correct = numeric_correct and precision_correct
+
+    feedback = ""
+    if numeric_correct and not precision_correct:
+        feedback = f"Please give your answer to {sig_figs} significant figures."
+
+    return _result(is_correct, abs(response_value - answer), None, feedback)
 
 
 def _evaluate_tolerance(response, answer, relative_tolerance, absolute_tolerance):

@@ -276,8 +276,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_sig_figs_correct(self):
         body = {
-            "response": 3.14159,
-            "answer": 3.14,
+            "response": "3.14",
+            "answer": 3.14159,
             "params": {
                 "sig_figs": 3
             },
@@ -290,7 +290,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_sig_figs_incorrect(self):
         body = {
-            "response": 3.15,
+            "response": "3.15",
             "answer": 3.14159,
             "params": {
                 "sig_figs": 3
@@ -302,10 +302,42 @@ class TestEvaluationFunction(unittest.TestCase):
 
         self.assertEqual(response.get("is_correct"), False)
 
+    def test_sig_figs_too_many_digits(self):
+        body = {
+            "response": "3.14159",
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual(
+            "significant figures" in response.get("feedback"), True)
+
+    def test_sig_figs_too_few_digits(self):
+        body = {
+            "response": "3.1",
+            "answer": 3.10,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual(
+            "significant figures" in response.get("feedback"), True)
+
     def test_sig_figs_negative_numbers(self):
         body = {
-            "response": -3.14159,
-            "answer": -3.14,
+            "response": "-3.14",
+            "answer": -3.14159,
             "params": {
                 "sig_figs": 3
             },
@@ -318,7 +350,7 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_sig_figs_zero_answer(self):
         body = {
-            "response": 0,
+            "response": "0",
             "answer": 0,
             "params": {
                 "sig_figs": 3
@@ -329,6 +361,120 @@ class TestEvaluationFunction(unittest.TestCase):
                                        body.get('params', {}))
 
         self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_trailing_decimal_zeros_significant(self):
+        body = {
+            "response": "92.00",
+            "answer": 92,
+            "params": {
+                "sig_figs": 4
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_leading_zeros_not_significant(self):
+        body = {
+            "response": "0.0032",
+            "answer": 0.0032,
+            "params": {
+                "sig_figs": 2
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_whole_number_trailing_zeros_not_significant(self):
+        body = {
+            "response": "540",
+            "answer": 540,
+            "params": {
+                "sig_figs": 2
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_whole_number_trailing_zeros_not_significant_wrong_count(self):
+        body = {
+            "response": "540",
+            "answer": 540,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+
+    def test_sig_figs_explicit_decimal_point_trailing_zeros_significant(self):
+        body = {
+            "response": "540.",
+            "answer": 540,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_scientific_notation(self):
+        body = {
+            "response": "5.02e4",
+            "answer": 50200,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), True)
+
+    def test_sig_figs_response_not_string(self):
+        body = {
+            "response": 3.14,
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual("Please enter a number." in response.get("feedback"), True)
+
+    def test_sig_figs_dangling_exponent_marker(self):
+        body = {
+            "response": "3.14e",
+            "answer": 3.14159,
+            "params": {
+                "sig_figs": 3
+            },
+        }
+
+        response = evaluation_function(body['response'], body['answer'],
+                                       body.get('params', {}))
+
+        self.assertEqual(response.get("is_correct"), False)
+        self.assertEqual("Please enter a number." in response.get("feedback"), True)
 
     def test_sig_figs_invalid_value(self):
         body = {
@@ -402,8 +548,8 @@ class TestEvaluationFunction(unittest.TestCase):
 
     def test_sig_figs_synonym_key(self):
         body = {
-            "response": 3.14159,
-            "answer": 3.14,
+            "response": "3.14",
+            "answer": 3.14159,
             "params": {
                 "significant_figures": 3
             },
